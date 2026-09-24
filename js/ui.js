@@ -17,6 +17,52 @@ function escapeHtml(value) {
     }[c]));
 }
 
+const TAB_HINTS = {
+    params: 'Los query params con la casilla activa se añaden autom\u00e1ticamente a la URL al enviar. Puedes usar variables {{var}}.',
+    auth: 'La autenticaci\u00f3n elegida se adjunta sola a cada env\u00edo: no necesitas escribir el header manualmente.',
+    headers: 'Headers HTTP personalizados como pares clave/valor.',
+    body: 'Elige un formato y escribe el contenido. El Content-Type se env\u00eda autom\u00e1ticamente seg\u00fan el modo.',
+    tests: 'Los tests se ejecutan al recibir la respuesta. Cada pm.test debe devolver true (ok) o false (fail).'
+};
+
+function renderOnboarding(host) {
+    const seg = (t, v) => {
+        if (t === 'code') return el('code', 'inline-code', v);
+        if (t === 'strong') return el('strong', null, v);
+        return el('span', null, v);
+    };
+    const steps = [
+        [['text', 'Escribe una URL como '], ['code', 'https://jsonplaceholder.typicode.com/todos/1'], ['text', ' y pulsa '], ['strong', 'Enviar'], ['text', ' o la tecla '], ['strong', 'Enter'], ['text', '.']],
+        [['text', 'Personaliza la petici\u00f3n en las pesta\u00f1as '], ['strong', 'Params'], ['text', ', '], ['strong', 'Auth'], ['text', ', '], ['strong', 'Headers'], ['text', ', '], ['strong', 'Body'], ['text', ' y '], ['strong', 'Tests'], ['text', '.']],
+        [['text', 'Reutiliza peticiones en '], ['strong', 'Historial'], ['text', ', organ\u00edzalas en '], ['strong', 'Colecciones'], ['text', ' y parametriza con variables '], ['code', '{{var}}'], ['text', ' definidas en '], ['strong', 'Entornos'], ['text', '.']]
+    ];
+    const box = el('div', 'onboarding');
+    const head = el('div', 'onboarding-head');
+    head.append(el('span', 'onboarding-title', 'Primeros pasos'), el('span', 'onboarding-badge', 'primeras peticiones'));
+    const ol = el('ol', 'onboarding-steps');
+    steps.forEach((parts) => {
+        const li = el('li');
+        parts.forEach((p) => li.append(seg(p[0], p[1])));
+        ol.append(li);
+    });
+    const actions = el('div', 'onboarding-actions');
+    const exampleBtn = el('button', 'btn', 'Cargar ejemplo');
+    exampleBtn.addEventListener('click', () => {
+        state.request.url = 'https://jsonplaceholder.typicode.com/todos/1';
+        $('#url').value = state.request.url;
+        saveAll();
+        notify('URL de ejemplo cargada. Pulsa Enviar.', 'ok');
+    });
+    const doneBtn = el('button', 'btn', 'Entendido');
+    doneBtn.addEventListener('click', () => {
+        box.remove();
+        try { localStorage.setItem('miniPostman:onboarded', '1'); } catch (e) {}
+    });
+    actions.append(exampleBtn, doneBtn);
+    box.append(head, ol, actions);
+    host.append(box);
+}
+
 function notify(message, type) {
     let wrap = document.querySelector('.toast-wrap');
     if (!wrap) {
@@ -125,6 +171,8 @@ function kvTable(host, rows, onChange, onMutate, title) {
         const tdKey = el('td');
         const keyInput = el('input', 'kv-input');
         keyInput.value = row.key;
+        keyInput.placeholder = 'clave';
+        keyInput.title = 'Clave (puede usar {{variables}} en el valor)';
         keyInput.addEventListener('input', () => {
             row.key = keyInput.value;
             onChange();
@@ -134,6 +182,7 @@ function kvTable(host, rows, onChange, onMutate, title) {
         const tdValue = el('td');
         const valInput = el('input', 'kv-input');
         valInput.value = row.value;
+        valInput.placeholder = 'valor';
         valInput.addEventListener('input', () => {
             row.value = valInput.value;
             onChange();
@@ -170,6 +219,10 @@ function renderRequestTab(tab) {
     const host = $('#req-tab-content');
     host.textContent = '';
     const r = state.request;
+
+    if (TAB_HINTS[tab]) {
+        host.append(el('p', 'tab-hint', TAB_HINTS[tab]));
+    }
 
     if (tab === 'params') {
         kvTable(host, r.params, saveAll, () => renderRequestTab(tab), 'Query params');
@@ -304,7 +357,7 @@ function renderResponse(tab) {
     host.textContent = '';
     const resp = state.response;
     if (!resp) {
-        host.append(el('p', 'placeholder', 'La respuesta aparecerá aquí.'));
+        host.append(el('p', 'placeholder', 'La respuesta aparecer\u00e1 aqu\u00ed. Escribe una URL y pulsa Enviar.'));
         return;
     }
 
@@ -360,7 +413,7 @@ function renderResponse(tab) {
 
 function renderHistory(host) {
     if (!state.history.length) {
-        host.append(el('p', 'placeholder', 'Sin peticiones recientes.'));
+        host.append(el('p', 'placeholder', 'A\u00fan no hay peticiones. Env\u00eda una desde la barra superior y aparecer\u00e1 aqu\u00ed.'));
         return;
     }
     const list = el('ul', 'history-list');
@@ -443,7 +496,7 @@ function renderCollections(host) {
     host.append(bar, addBtn, exportBtn, importBtn, fileInput);
 
     if (!state.collections.length) {
-        host.append(el('p', 'placeholder', 'No hay colecciones todavía.'));
+        host.append(el('p', 'placeholder', 'A\u00fan no hay colecciones. Completa una petici\u00f3n, pulsa Enviar y gu\u00e1rdala aqu\u00ed para reutilizarla.'));
         return;
     }
 
@@ -501,7 +554,7 @@ function renderEnvironments(host) {
     host.append(addBtn);
 
     if (!state.environments.length) {
-        host.append(el('p', 'placeholder', 'No hay entornos.'));
+        host.append(el('p', 'placeholder', 'A\u00fan no hay entornos. Crea uno para definir variables y usarlas como {{var}} en tus peticiones.'));
         return;
     }
 

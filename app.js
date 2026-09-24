@@ -6,7 +6,8 @@ const LS = {
     lastRequest: 'miniPostman:lastRequest',
     reqTab: 'miniPostman:reqTab',
     respTab: 'miniPostman:respTab',
-    sidebarTab: 'miniPostman:sidebarTab'
+    sidebarTab: 'miniPostman:sidebarTab',
+    onboarded: 'miniPostman:onboarded'
 };
 
 function defaultAuth() {
@@ -286,6 +287,15 @@ function importCollections(event) {
     reader.readAsText(file);
 }
 
+function maybeShowOnboarding() {
+    try {
+        if (localStorage.getItem(LS.onboarded)) return;
+    } catch (e) {
+        return;
+    }
+    renderOnboarding($('#onboarding'));
+}
+
 function init() {
     if (!window.localStorage) return;
     loadState();
@@ -345,6 +355,8 @@ function init() {
     renderSidebar(state.sidebarTab);
     renderStatusInfo();
     renderResponse(state.respTab);
+
+    maybeShowOnboarding();
 }
 
 init();
