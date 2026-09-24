@@ -3,39 +3,72 @@
 
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Web API Client</title>
     <link rel="stylesheet" href="styles.css">
 </head>
 
 <body>
     <div class="container">
-        <h1>Mini Postman Web</h1>
-        <div class="request-bar">
-            <select id="method">
-                <option value="GET">GET</option>
-                <option value="POST">POST</option>
-                <option value="PUT">PUT</option>
-                <option value="DELETE">DELETE</option>
-                <option value="PATCH">PATCH</option>
-            </select>
-            <input type="text" id="url" placeholder="https://api.ejemplo.com/v1/recurso" />
-            <button id="send-btn">Enviar</button>
-        </div>
+        <header class="topbar">
+            <h1>Mini Postman</h1>
+            <div class="env-picker">
+                <label for="env-select">Entorno</label>
+                <select id="env-select"></select>
+            </div>
+        </header>
 
-        <div class="panes">
-            <div class="pane">
-                <h3>Headers (JSON)</h3>
-                <textarea id="headers" placeholder='{"Content-Type": "application/json"}'></textarea>
-                <h3>Body (JSON)</h3>
-                <textarea id="body" placeholder='{"key": "value"}'></textarea>
-            </div>
-            <div class="pane">
-                <h3>Respuesta</h3>
-                <div id="status-info"></div>
-                <pre><code id="response-output">Respuesta aparecerá aquí...</code></pre>
-            </div>
+        <div class="layout">
+            <aside class="sidebar">
+                <nav class="sidebar-tabs">
+                    <button class="tab-btn" data-sidebar="history">Historial</button>
+                    <button class="tab-btn" data-sidebar="collections">Colecciones</button>
+                    <button class="tab-btn" data-sidebar="envs">Entornos</button>
+                </nav>
+                <div id="sidebar-content" class="sidebar-content"></div>
+            </aside>
+
+            <main class="main">
+                <div class="request-bar">
+                    <select id="method">
+                        <option value="GET">GET</option>
+                        <option value="POST">POST</option>
+                        <option value="PUT">PUT</option>
+                        <option value="DELETE">DELETE</option>
+                        <option value="PATCH">PATCH</option>
+                        <option value="HEAD">HEAD</option>
+                        <option value="OPTIONS">OPTIONS</option>
+                    </select>
+                    <input type="text" id="url" placeholder="https://api.ejemplo.com/v1/recurso" />
+                    <button id="send-btn" class="send">Enviar</button>
+                </div>
+
+                <nav class="tabbar" id="req-tabs">
+                    <button class="tab-btn" data-reqtab="params">Params</button>
+                    <button class="tab-btn" data-reqtab="auth">Auth</button>
+                    <button class="tab-btn" data-reqtab="headers">Headers</button>
+                    <button class="tab-btn" data-reqtab="body">Body</button>
+                    <button class="tab-btn" data-reqtab="tests">Tests</button>
+                </nav>
+                <div id="req-tab-content" class="panel"></div>
+
+                <section class="response">
+                    <header class="response-bar">
+                        <nav class="tabbar" id="resp-tabs">
+                            <button class="tab-btn" data-resptab="body">Respuesta</button>
+                            <button class="tab-btn" data-resptab="headers">Headers</button>
+                            <button class="tab-btn" data-resptab="tests">Resultados</button>
+                        </nav>
+                        <div id="status-info" class="status-info"></div>
+                    </header>
+                    <div id="resp-tab-content" class="panel"></div>
+                </section>
+            </main>
         </div>
     </div>
+
+    <script src="js/request.js"></script>
+    <script src="js/ui.js"></script>
     <script src="app.js"></script>
 </body>
 

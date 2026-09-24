@@ -4,10 +4,17 @@ Cliente de API REST en el navegador con backend proxy desplegado en Netlify Func
 
 ## Qué hace
 
-- Envía peticiones `GET`, `POST`, `PUT`, `DELETE` y `PATCH` desde el navegador.
-- Permite definir headers y body en JSON.
-- Muestra el estado de la respuesta, los headers y el cuerpo (formateado si es JSON).
-- El proxy de Netlify evita los problemas de CORS al hacer la petición desde el servidor.
+- Envía peticiones `GET`, `POST`, `PUT`, `DELETE`, `PATCH`, `HEAD` y `OPTIONS` desde el navegador.
+- Editor de peticiones estilo Postman con pestañas:
+  - **Params**: query params en tabla clave/valor (activables/desactivables).
+  - **Headers**: headers en tabla clave/valor.
+  - **Auth**: None, Bearer Token, Basic Auth y API Key (header o query).
+  - **Body**: None, JSON, texto, XML, `x-www-form-urlencoded` y `multipart/form-data`.
+  - **Tests**: scripts de aserción con `pm.test(name, fn)`, `pm.response` y `tests["nombre"] = true|false`.
+- Respuesta con estado coloreado por código (2xx/3xx/4xx/5xx), tiempo de respuesta, tamaño, pestañas de Headers y resultado de tests, y resaltado de sintaxis JSON.
+- **Historial** de las últimas 25 peticiones (localStorage), reutilizables con un clic.
+- **Colecciones**: crear colecciones, guardar/recuperar peticiones, exportarlas e importarlas en JSON.
+- **Entornos y variables**: definición de variables en entornos y sustitución automática de `{{variable}}` en URL, params, headers y body.
 
 ## Cómo usarlo
 
@@ -39,8 +46,11 @@ Sirve la página estática y las funciones en `http://localhost:8888`.
 ```
 api-client-web/
 ├── index.html              # Interfaz de usuario
-├── app.js                  # Lógica del cliente: lee el formulario y llama al proxy
+├── app.js                  # Estado, persistencia, envío y runner de tests
 ├── styles.css              # Estilos (tema oscuro)
+├── js/
+│   ├── request.js          # Construcción de la petición (auth, body, variables)
+│   └── ui.js               # Renderizados, tablas clave/valor y resaltado JSON
 ├── netlify.toml            # Configuración de Netlify (publish y functions)
 └── netlify/
     └── functions/
