@@ -21,7 +21,7 @@ document.getElementById('send-btn').addEventListener('click', async () => {
 
     let body = null;
     try {
-        if (bodyRaw.trim() && ['POST', 'PUT', 'PATCH'].includes(method)) {
+        if (bodyRaw.trim() && ['POST', 'PUT', 'PATCH', 'DELETE'].includes(method)) {
             body = JSON.parse(bodyRaw);
         }
     } catch (e) {
@@ -31,6 +31,8 @@ document.getElementById('send-btn').addEventListener('click', async () => {
 
     output.textContent = 'Enviando petición...';
     statusInfo.textContent = '';
+    const sendBtn = document.getElementById('send-btn');
+    sendBtn.disabled = true;
 
     try {
         const response = await fetch('/.netlify/functions/proxy', {
@@ -40,9 +42,15 @@ document.getElementById('send-btn').addEventListener('click', async () => {
         });
 
         const result = await response.json();
-        
-        statusInfo.innerHTML = `Estado: <strong>${result.status} ${result.statusText}</strong>`;
-        
+
+        if (!response.ok || result.error) {
+            statusInfo.textContent = `Error ${response.status}: ${result.error || 'Respuesta inválida del proxy'}`;
+            output.textContent = result.error || result.data || 'Sin detalles';
+            return;
+        }
+
+        statusInfo.textContent = `Estado: ${result.status} ${result.statusText}`;
+
         try {
             const parsedData = JSON.parse(result.data);
             output.textContent = JSON.stringify(parsedData, null, 2);
@@ -50,6 +58,9 @@ document.getElementById('send-btn').addEventListener('click', async () => {
             output.textContent = result.data;
         }
     } catch (error) {
+        statusInfo.textContent = 'Error interno';
         output.textContent = `Error interno: ${error.message}`;
+    } finally {
+        sendBtn.disabled = false;
     }
 });
